@@ -13,7 +13,7 @@
                 "message": "Imagine being a weeb and having anime as your pfp lmfao. You're banned."
             },
             "give_role": {
-                "enabled": true,
+                "enabled": false,
                 "roles": [
                     "roleId1"
                 ],
@@ -50,7 +50,7 @@
                 "message": "Imagine playing {game_name} lmfao. I gave you the **{role_name}** role loser."
             },
             "send_message": {
-                "enabled": true,
+                "enabled": false,
                 "message": "Imagine playing {game_name} lmfao"
             }
         }
