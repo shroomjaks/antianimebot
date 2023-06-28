@@ -1,0 +1,58 @@
+{
+    "botToken": "TOKEN",
+    "serverId": "SERVERID",
+    "weebSettings": {
+        "minimumConfidence": 0.9,
+        "punishments": {
+            "kick": {
+                "enabled": false,
+                "message": "Imagine being a weeb and having anime as your pfp lmfao. You're kicked."
+            },
+            "ban": {
+                "enabled": false,
+                "message": "Imagine being a weeb and having anime as your pfp lmfao. You're banned."
+            },
+            "give_role": {
+                "enabled": true,
+                "roles": [
+                    "roleId1"
+                ],
+                "message": "Imagine being a weeb and having anime as your pfp lmfao. I gave you the **{role_name}** role loser."
+            },
+            "send_message": {
+                "enabled": false,
+                "message": "Imagine being a weeb and having anime as your pfp lmfao"
+            }
+        }
+    },
+    "gameSettings": {
+        "bannedGames": [
+            "Genshin Impact",
+            "League of Legends"
+        ],
+        "punishments": {
+            "kick": {
+                "enabled": false,
+                "message": "Imagine playing {game_name} lmfao. You're kicked."
+            },
+            "ban": {
+                "enabled": false,
+                "message": "Imagine playing {game_name} lmfao. You're banned."
+            },
+            "give_role": {
+                "enabled": false,
+                "roles": [
+                    "roleId1"
+                ],
+                "game_specific_roles": {
+                    "Genshin Impact": "roleId1"
+                },
+                "message": "Imagine playing {game_name} lmfao. I gave you the **{role_name}** role loser."
+            },
+            "send_message": {
+                "enabled": true,
+                "message": "Imagine playing {game_name} lmfao"
+            }
+        }
+    }
+}
