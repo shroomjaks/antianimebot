@@ -17,6 +17,5 @@ A Discord.js bot that uses machine learning to automatically punish users with a
 - Ban / kick / apply role(s) / send custom DM to user's who play certian games such as Genshin Impact and League of Legends
 
 ## Planned features
-- Command and event handlers
 - Punishment lasts until user changes their profile picture
 - Furry profile picture detection
