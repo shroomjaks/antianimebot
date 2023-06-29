@@ -1,0 +1,53 @@
+module.exports = {
+    name: 'userUpdate',
+    async execute(oldUser, newUser, client, settings, predictImage) {
+        if (oldUser.avatar !== newUser.avatar) {
+            console.log(`${newUser.username} updated their profile picture`)
+    
+            const member = await client.guilds.cache.get(serverId).members.fetch(newUser.id)
+            const avatarUrl = newUser.displayAvatarURL({ extension: 'png', size: 512, forceStatic: true })
+            const prediction = await predictImage(avatarUrl).then(JSON.parse)
+    
+            console.log(prediction)
+    
+            const weebSettings = settings.get('weebSettings')
+            const minimumConfidence = weebSettings.minimumConfidence
+            const punishments = weebSettings.punishments
+            const punishment = Object.keys(punishments).find(punishment => punishments[punishment].enabled === true)
+            const punishmentSettings = punishments[punishment]
+            let punishmentMessage = punishmentSettings.message
+    
+            if (prediction.class === 'Anime' && prediction.confidence >= minimumConfidence) {
+                console.log(`${member.user.username} is a weeb!`)
+    
+                if (punishment === 'kick' && member.kickable) {
+                    await member.send({ content: punishmentMessage })
+                    await member.kick({ reason: punishmentMessage })
+    
+                    console.log(`Kicked ${member.user.username} for having an anime profile picture`)
+                } else if (punishment === 'ban' && member.bannable) {
+                    await member.send({ content: punishmentMessage })
+                    await member.ban({ reason: punishmentMessage })
+    
+                    console.log(`Banned ${member.user.username} for having an anime profile picture`)
+                } else if (punishment === 'give_role' && member.roles.highest.position < member.guild.members.me.roles.highest.position) {
+                    const roleIds = punishmentSettings['roles']
+    
+                    if (roleIds.length > 0) {
+                        for (const roleId of roleIds) {
+                            const role = await client.guilds.cache.get(settings.get('serverId')).roles.fetch(roleId)
+                            await member.roles.add(role)
+                            await member.send({ content: punishmentMessage.replace('{role_name}', role.name) })
+    
+                            console.log(`Gave ${member.user.username} the ${role.name} role for having an anime profile picture`)
+                        }
+                    }
+                } else if (punishment === 'send_message') {
+                    await member.send({ content: punishmentMessage })
+    
+                    console.log(`Sent ${member.user.username} a message for having an anime profile picture`)
+                }
+            }
+        }
+    }
+}

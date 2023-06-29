@@ -1,7 +1,7 @@
 {
   "name": "antianimebot",
   "description": "A bot that uses machine learning to automatically punish users with anime profile pictures",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "index.js",
   "dependencies": {
     "@tensorflow/tfjs": "^4.8.0",

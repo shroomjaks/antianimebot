@@ -1,12 +1,14 @@
-const { Client, GatewayIntentBits, ActivityType, EmbedBuilder, REST, Routes, SlashCommandBuilder } = require('discord.js')
+const { Client, GatewayIntentBits, ActivityType, REST, Routes } = require('discord.js')
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildPresences] })
 
-const axios = require('axios')
+const fs = require('fs')
+const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'))
+const eventFiles = fs.readdirSync('./events').filter(file => file.endsWith('.js'))
+client.commands = new Map()
+client.events = new Map()
 
 const JSONdb = require('simple-json-db')
-// const database = new JSONdb('./database.json')
 const settings = new JSONdb('./settings.json')
-
 const token = settings.get('botToken')
 const serverId = settings.get('serverId')
 
@@ -14,266 +16,92 @@ const tf = require('@tensorflow/tfjs-node')
 let model = null
 
 client.once('ready', async function () {
-    model = await tf.loadLayersModel('https://raw.githubusercontent.com/Lozarth/antianimebot/main/mode/model.json')
+    model = await tf.loadLayersModel('https://raw.githubusercontent.com/Lozarth/antianimebot/main/model/model.json')
+
+    const rest = new REST({ version: '10' }).setToken(settings.get('botToken'))
+
+    const commands = []
+
+    for (const file of commandFiles) {
+        const command = require(`./commands/${file}`)
+        const commandData = command.data.toJSON()
+        
+        client.commands.set(commandData.name, command)
+
+        commands.push(commandData)
+    }
+
+    try {
+        console.log('Started refreshing slash commands...')
+
+        await rest.put(
+            Routes.applicationGuildCommands(client.user.id, serverId),
+            { body: commands }
+        )
+
+        console.log('Successfully reloaded slash commands')
+    } catch (err) {
+        console.error(err)
+    }
+
+    for (const file of eventFiles) {
+        const event = require(`./events/${file}`)
+        client.events.set(event.name, event)
+    }
 
     console.log('Anti Anime Bot is ready to punish weebs!')
 
     await client.user.setActivity('weebs suffer', { type: ActivityType.Watching })
+})
 
-    const commands = [
-        new SlashCommandBuilder()
-            .setName('ping')
-            .setDescription('Shows bot latency'),
-        new SlashCommandBuilder()
-            .setName('scanmembers')
-            .setDescription('Scans all members in the server for anime profile pictures'),
-    ]
+client.on('interactionCreate', async function (interaction) {
+    if (interaction.isChatInputCommand()) {
+        const command = client.commands.get(interaction.commandName)
 
-    const rest = new REST({ version: '10' }).setToken(token)
+        if (!command) return
+
+        try {
+            await command.execute(interaction, client, settings, predictImage)
+        } catch (err) {
+            console.error(err)
+            await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true })
+        }
+    }
+})
+
+client.on('guildMemberAdd', async function (member) {
+    const guildMemberAddEvent = client.events.get('guildMemberAdd')
 
     try {
-        console.log('Started refreshing application (/) commands.')
-
-        await rest.put(
-            Routes.applicationGuildCommands(client.user.id, serverId),
-            { body: commands.map(command => command.toJSON()) }
-        )
-
-        console.log('Successfully reloaded application (/) commands.')
+        await guildMemberAddEvent.execute(member, client, settings, predictImage)
     } catch (err) {
         console.error(err)
     }
 })
 
-client.on('interactionCreate', async function (interaction) {
-    if (!interaction.isChatInputCommand()) return
-
-    if (interaction.commandName === 'ping') {
-        await interaction.reply({ content: `Pong! 🏓\nLatency is ${Date.now() - interaction.createdTimestamp}ms.`, ephemeral: true })
-    } else if (interaction.commandName === 'scanmembers') {
-        await interaction.reply({ content: 'Scanning members...', ephemeral: true })
-
-        let members = await interaction.guild.members.fetch({ limit: 1000 })
-        members = members.filter(member => !member.user.bot)
-        members = members.sort((a, b) => b.joinedTimestamp - a.joinedTimestamp)
-
-        const weebSettings = settings.get('weebSettings')
-        const minimumConfidence = weebSettings.minimumConfidence
-        const punishments = weebSettings.punishments
-        const punishment = Object.keys(punishments).find(punishment => punishments[punishment].enabled === true)
-        const punishmentSettings = punishments[punishment]
-        let punishmentMessage = punishmentSettings.message
-
-        for (const member of members.values()) {
-            if (member.user.bot) continue
-
-            const avatarUrl = member.user.displayAvatarURL({ extension: 'png', size: 512, forceStatic: true })
-            const prediction = await predictImage(avatarUrl).then(JSON.parse)
-
-            console.log(prediction)
-
-            if (prediction.class === 'Anime' && prediction.confidence >= minimumConfidence) {
-                console.log(`${member.user.username} is a weeb!`)
-
-                if (punishment === 'kick' && member.kickable) {
-                    await member.send({ content: punishmentMessage })
-                    await member.kick({ reason: punishmentMessage })
-
-                    console.log(`Kicked ${member.user.username} for having an anime profile picture`)
-                } else if (punishment === 'ban' && member.bannable) {
-                    await member.send({ content: punishmentMessage })
-                    await member.ban({ reason: punishmentMessage })
-
-                    console.log(`Banned ${member.user.username} for having an anime profile picture`)
-                } else if (punishment === 'give_role' && member.roles.highest.position < member.guild.members.me.roles.highest.position) {
-                    const roleIds = punishmentSettings['roles']
-
-                    if (roleIds.length > 0) {
-                        for (const roleId of roleIds) {
-                            const role = await client.guilds.cache.get(serverId).roles.fetch(roleId)
-                            await member.roles.add(role)
-                            await member.send({ content: punishmentMessage.replace('{role_name}', role.name) })
-
-                            console.log(`Gave ${member.user.username} the ${role.name} role for having an anime profile picture`)
-                        }
-                    }
-                } else if (punishment === 'send_message') {
-                    await member.send({ content: punishmentMessage })
-
-                    console.log(`Sent ${member.user.username} a message for having an anime profile picture`)
-                }
-            }
-        }
-
-        await interaction.followUp({ content: 'Finished scanning members!', ephemeral: true })
-    }
-})
-
-client.on('guildMemberAdd', async function (member) {
-    if (member.user.bot) return
-
-    const avatarUrl = member.user.displayAvatarURL({ extension: 'png', size: 512, forceStatic: true })
-    const prediction = await predictImage(avatarUrl).then(JSON.parse)
-
-    console.log(prediction)
-
-    const weebSettings = settings.get('weebSettings')
-    const minimumConfidence = weebSettings.minimumConfidence
-    const punishments = weebSettings.punishments
-    const punishment = Object.keys(punishments).find(punishment => punishments[punishment].enabled === true)
-    const punishmentSettings = punishments[punishment]
-    let punishmentMessage = punishmentSettings.message
-
-    if (prediction.class === 'Anime' && prediction.confidence >= minimumConfidence) {
-        console.log(`${member.user.username} is a weeb!`)
-
-        if (punishment === 'kick' && member.kickable) {
-            await member.send({ content: punishmentMessage })
-            await member.kick({ reason: punishmentMessage })
-
-            console.log(`Kicked ${member.user.username} for having an anime profile picture`)
-        } else if (punishment === 'ban' && member.bannable) {
-            await member.send({ content: punishmentMessage })
-            await member.ban({ reason: punishmentMessage })
-
-            console.log(`Banned ${member.user.username} for having an anime profile picture`)
-        } else if (punishment === 'give_role' && member.roles.highest.position < member.guild.members.me.roles.highest.position) {
-            const roleIds = punishmentSettings['roles']
-
-            if (roleIds.length > 0) {
-                for (const roleId of roleIds) {
-                    const role = await client.guilds.cache.get(serverId).roles.fetch(roleId)
-                    await member.roles.add(role)
-                    await member.send({ content: punishmentMessage.replace('{role_name}', role.name) })
-
-                    console.log(`Gave ${member.user.username} the ${role.name} role for having an anime profile picture`)
-                }
-            }
-        } else if (punishment === 'send_message') {
-            await member.send({ content: punishmentMessage })
-
-            console.log(`Sent ${member.user.username} a message for having an anime profile picture`)
-        }
-    }
-})
-
 client.on('userUpdate', async function (oldUser, newUser) {
-    if (oldUser.avatar !== newUser.avatar) {
-        console.log(`${newUser.username} updated their profile picture`)
+    const userUpdateEvent = client.events.get('userUpdate')
 
-        const member = await client.guilds.cache.get(serverId).members.fetch(newUser.id)
-        const avatarUrl = newUser.displayAvatarURL({ extension: 'png', size: 512, forceStatic: true })
-        const prediction = await predictImage(avatarUrl).then(JSON.parse)
-
-        console.log(prediction)
-
-        const weebSettings = settings.get('weebSettings')
-        const minimumConfidence = weebSettings.minimumConfidence
-        const punishments = weebSettings.punishments
-        const punishment = Object.keys(punishments).find(punishment => punishments[punishment].enabled === true)
-        const punishmentSettings = punishments[punishment]
-        let punishmentMessage = punishmentSettings.message
-
-        if (prediction.class === 'Anime' && prediction.confidence >= minimumConfidence) {
-            console.log(`${member.user.username} is a weeb!`)
-
-            if (punishment === 'kick' && member.kickable) {
-                await member.send({ content: punishmentMessage })
-                await member.kick({ reason: punishmentMessage })
-
-                console.log(`Kicked ${member.user.username} for having an anime profile picture`)
-            } else if (punishment === 'ban' && member.bannable) {
-                await member.send({ content: punishmentMessage })
-                await member.ban({ reason: punishmentMessage })
-
-                console.log(`Banned ${member.user.username} for having an anime profile picture`)
-            } else if (punishment === 'give_role' && member.roles.highest.position < member.guild.members.me.roles.highest.position) {
-                const roleIds = punishmentSettings['roles']
-
-                if (roleIds.length > 0) {
-                    for (const roleId of roleIds) {
-                        const role = await client.guilds.cache.get(serverId).roles.fetch(roleId)
-                        await member.roles.add(role)
-                        await member.send({ content: punishmentMessage.replace('{role_name}', role.name) })
-
-                        console.log(`Gave ${member.user.username} the ${role.name} role for having an anime profile picture`)
-                    }
-                }
-            } else if (punishment === 'send_message') {
-                await member.send({ content: punishmentMessage })
-
-                console.log(`Sent ${member.user.username} a message for having an anime profile picture`)
-            }
-        }
+    try {
+        await userUpdateEvent.execute(oldUser, newUser, client, settings, predictImage)
+    } catch (err) {
+        console.error(err)
     }
 })
 
 client.on('presenceUpdate', async function (oldPresence, newPresence) {
-    if (newPresence.activities.length === 0) return
+    const presenceUpdateEvent = client.events.get('presenceUpdate')
 
-    const member = await newPresence.guild.members.fetch(newPresence.userId)
-    if (member.user.bot) return
-
-    for (const activity of newPresence.activities) {
-        if (activity.type !== ActivityType.Playing) continue
-
-        console.log(`${member.user.username} is playing ${activity.name}`)
-
-        const gameSettings = settings.get('gameSettings')
-        const bannedGames = gameSettings.bannedGames
-        const punishments = gameSettings.punishments
-        const punishment = Object.keys(punishments).find(punishment => punishments[punishment].enabled === true)
-        const punishmentSettings = punishments[punishment]
-        let punishmentMessage = punishmentSettings.message
-        punishmentMessage = punishmentMessage.replace('{game_name}', activity.name)
-
-        if (bannedGames.includes(activity.name)) {
-            if (punishment === 'kick' && member.kickable) {
-                await member.send({ content: punishmentMessage })
-                await member.kick({ reason: punishmentMessage })
-
-                console.log(`Kicked ${member.user.username} for playing ${activity.name}`)
-            } else if (punishment === 'ban' && member.bannable) {
-                await member.send({ content: punishmentMessage })
-                await member.ban({ reason: punishmentMessage })
-
-                console.log(`Banned ${member.user.username} for playing ${activity.name}`)
-            } else if (punishment === 'give_role' && member.roles.highest.position < member.guild.members.me.roles.highest.position) {
-                const roleIds = punishmentSettings['roles']
-                const gameSpecificRoles = punishmentSettings['game_specific_roles']
-
-                if (roleIds.length > 0) {
-                    for (const roleId of roleIds) {
-                        const role = await client.guilds.cache.get(serverId).roles.fetch(roleId)
-                        await member.roles.add(role)
-                        await member.send({ content: punishmentMessage.replace('{role_name}', role.name) })
-
-                        console.log(`Gave ${member.user.username} the ${role.name} role for playing ${activity.name}`)
-                    }
-                }
-
-                if (Object.keys(gameSpecificRoles).length > 0) {
-                    for (const game of Object.keys(gameSpecificRoles)) {
-                        if (game === activity.name) {
-                            const role = await client.guilds.cache.get(serverId).roles.fetch(gameSpecificRoles[game])
-                            await member.roles.add(role)
-                            await member.send({ content: punishmentMessage.replace('{role_name}', role.name) })
-
-                            console.log(`Gave ${member.user.username} the ${role.name} role for playing ${activity.name}`)
-                        }
-                    }
-                }
-            } else if (punishment === 'send_message') {
-                await member.send({ content: punishmentMessage })
-
-                console.log(`Sent ${member.user.username} a message for playing ${activity.name}`)
-            }
-        }
+    try {
+        await presenceUpdateEvent.execute(oldPresence, newPresence, client, settings)
+    } catch (err) {
+        console.error(err)
     }
 })
 
 client.login(token)
 
+const axios = require('axios')
 async function predictImage(imageUrl) {
     const startTime = Date.now()
 
@@ -296,6 +124,17 @@ async function predictImage(imageUrl) {
 
     return JSON.stringify({ class: predictedClassName, confidence: Number(predictedClassConfidence), time: `${endTime - startTime}ms` })
 }
+
+async function checkUpdate() {
+    const githubPackage = await axios.get('https://raw.githubusercontent.com/Lozarth/antianimebot/main/bot/package.json', { responseType: 'json' }).then(response => response.data)
+    const localPackage = require('./package.json')
+
+    if (githubPackage.version !== localPackage.version) {
+        console.log('Hey btw I released a new version you should download it')
+    }
+}
+
+checkUpdate()
 
 process.on('unhandledRejection', function (error) {
     console.error(error)
