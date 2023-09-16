@@ -8,7 +8,7 @@ Not Anime - 314 image samples
 ## Installation
 1. [Make sure you have the latest version of Node.js installed](https://nodejs.org/en)
 2. [Download the bot files](https://download-directory.github.io/?url=https%3A%2F%2Fgithub.com%2FLozarth%2Fantianimebot%2Ftree%2Fmain%2Fbot)
-3. Install the NPM depedencies with `npm install`
+3. Install the NPM dependencies with `npm install`
 4. Open `settings.json` in a text editor / IDE of choice
 5. Change `botToken` to your bot's token and `serverId` to the main server id that the bot will be used in
 6. Change any other settings accordingly
