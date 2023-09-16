@@ -6,7 +6,7 @@ Not Anime - 314 image samples
 500 epochs training
 
 ## Installation
-1. [Make sure you have the latest version of Node.js installed.](https://nodejs.org/en)
+1. [Make sure you have the latest version of Node.js installed](https://nodejs.org/en)
 2. [Download the bot files](https://download-directory.github.io/?url=https%3A%2F%2Fgithub.com%2FLozarth%2Fantianimebot%2Ftree%2Fmain%2Fbot)
 3. Install the NPM depedencies with `npm install`
 4. Open `settings.json` in text editor / IDE of choice
