@@ -16,6 +16,12 @@ A Discord.js bot that uses machine learning to automatically punish users with a
 - Ban / kick / apply role(s) / send custom DM to user's who have anime profile pictures
 - Ban / kick / apply role(s) / send custom DM to user's who play certian games such as Genshin Impact and League of Legends
 
+## Detection accuracy
+<img src="https://github.com/Lozarth/antianimebot/assets/46830521/ea47c798-3798-45e6-b782-1fafaa10ace4" width="400"/>
+
 ## Planned features
 - Punishment lasts until user changes their profile picture
 - Furry profile picture detection
+
+## Creating your own model
+https://teachablemachine.withgoogle.com/train
