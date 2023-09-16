@@ -19,3 +19,6 @@ A Discord.js bot that uses machine learning to automatically punish users with a
 ## Planned features
 - Punishment lasts until user changes their profile picture
 - Furry profile picture detection
+
+# Creating your own model
+https://teachablemachine.withgoogle.com/train
