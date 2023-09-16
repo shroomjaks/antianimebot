@@ -1,6 +1,8 @@
 const { Client, GatewayIntentBits, ActivityType, REST, Routes } = require('discord.js')
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildPresences] })
 
+const axios = require('axios')
+
 const fs = require('fs')
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'))
 const eventFiles = fs.readdirSync('./events').filter(file => file.endsWith('.js'))
@@ -14,7 +16,6 @@ const serverId = settings.get('serverId')
 
 const tf = require('@tensorflow/tfjs-node')
 let model = null
-
 client.once('ready', async function () {
     model = await tf.loadLayersModel('https://raw.githubusercontent.com/Lozarth/antianimebot/main/model/model.json')
 
@@ -101,7 +102,6 @@ client.on('presenceUpdate', async function (oldPresence, newPresence) {
 
 client.login(token)
 
-const axios = require('axios')
 async function predictImage(imageUrl) {
     const startTime = Date.now()
 

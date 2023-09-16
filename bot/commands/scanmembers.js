@@ -44,7 +44,7 @@ module.exports = {
 
                     if (roleIds.length > 0) {
                         for (const roleId of roleIds) {
-                            const role = await client.guilds.cache.get(settings.get('serverId')).roles.fetch(roleId)
+                            const role = await member.guild.roles.fetch(roleId)
                             await member.roles.add(role)
                             await member.send({ content: punishmentMessage.replace('{role_name}', role.name) })
 
