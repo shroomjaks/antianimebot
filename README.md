@@ -6,19 +6,17 @@ Not Anime - 314 image samples
 500 epochs training
 
 ## Installation
-1. Make sure you have a new version of Node.js and NPM installed
+1. [Make sure you have the latest version of Node.js installed.](https://nodejs.org/en)
 2. [Download the bot files](https://download-directory.github.io/?url=https%3A%2F%2Fgithub.com%2FLozarth%2Fantianimebot%2Ftree%2Fmain%2Fbot)
 3. Install the NPM depedencies with `npm install`
-4. Run the bot with `node index.js`
-
-## Settings
-- Open `settings.json` in text editor / IDE of choice
-- Change bot token to your bot's token and server id to the main server id that the bot will be used in
-- Change any other settings accordingly
+4. Open `settings.json` in text editor / IDE of choice
+5. Change `botToken` to your bot's token and `serverId` to the main server id that the bot will be used in
+6. Change any other settings accordingly
+7. Run the bot with `node index.js`
 
 ## Features
-- Ban / kick / apply role(s) / send custom DM to user's who have anime profile pictures
-- Ban / kick / apply role(s) / send custom DM to user's who play certian games such as Genshin Impact and League of Legends
+- Ban / kick / apply role(s) / send custom DM to users who have anime profile pictures
+- Ban / kick / apply role(s) / send custom DM to users who play certain games such as Genshin Impact and League of Legends
 
 ## Detection accuracy
 <img src="https://github.com/Lozarth/antianimebot/assets/46830521/ea47c798-3798-45e6-b782-1fafaa10ace4" width="400"/>
