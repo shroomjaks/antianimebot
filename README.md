@@ -1,5 +1,8 @@
 # Anti Anime Bot
-A Discord.js bot that uses machine learning to automatically punish users with anime profile pictures
+A Discord.js bot that uses Tensorflow image recognition to automatically punish users with anime profile pictures
+Anime     - 694 image samples
+Not Anime - 314 image samples
+500 epochs training
 
 ## Installation
 1. Make sure you have a new version of Node.js and NPM installed
