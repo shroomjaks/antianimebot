@@ -3,7 +3,9 @@ A Discord.js bot that uses Tensorflow image recognition to automatically punish 
 
 Anime     - 694 image samples  
 Not Anime - 314 image samples  
-500 epochs training
+500 epochs training 
+
+<img src="https://github.com/Lozarth/antianimebot/assets/46830521/ea47c798-3798-45e6-b782-1fafaa10ace4" width="350"/>
 
 ## Installation
 1. [Make sure you have the latest version of Node.js installed](https://nodejs.org/en)
@@ -17,9 +19,6 @@ Not Anime - 314 image samples
 ## Features
 - Ban / kick / apply role(s) / send custom DM to users who have anime profile pictures
 - Ban / kick / apply role(s) / send custom DM to users who play certain games such as Genshin Impact and League of Legends
-
-## Detection accuracy
-<img src="https://github.com/Lozarth/antianimebot/assets/46830521/ea47c798-3798-45e6-b782-1fafaa10ace4" width="400"/>
 
 ## Planned features
 - Punishment lasts until user changes their profile picture
