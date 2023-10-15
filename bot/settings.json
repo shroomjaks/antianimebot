@@ -22,6 +22,38 @@
             "send_message": {
                 "enabled": false,
                 "message": "Imagine being a weeb and having anime as your pfp lmfao"
+            },
+            "review": {
+                "enabled": false,
+                "channelId": "channelId1"
+            }
+        }
+    },
+    "furrySettings": {
+        "minimumConfidence": 0.9,
+        "punishments": {
+            "kick": {
+                "enabled": false,
+                "message": "Imagine being a furry and having a furry pfp lmfao. You're kicked."
+            },
+            "ban": {
+                "enabled": false,
+                "message": "Imagine being a furry and having a furry pfp lmfao. You're banned."
+            },
+            "give_role": {
+                "enabled": false,
+                "roles": [
+                    "roleId1"
+                ],
+                "message": "Imagine being a furry and having a furry pfp lmfao. I gave you the **{role_name}** role loser."
+            },
+            "send_message": {
+                "enabled": false,
+                "message": "Imagine being a furry and having a furry pfp lmfao"
+            },
+            "review": {
+                "enabled": false,
+                "channelId": "channelId1"
             }
         }
     },

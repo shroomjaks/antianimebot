@@ -1,6 +1,6 @@
 {
   "name": "antianimebot",
-  "description": "A bot that uses machine learning to automatically punish users with anime profile pictures",
+  "description": "A Discord.js bot that uses Tensorflow image recognition to automatically punish users with anime profile pictures",
   "version": "1.0.1",
   "main": "index.js",
   "dependencies": {

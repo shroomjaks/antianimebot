@@ -1,1 +1,1 @@
-{"tfjsVersion":"1.3.1","tmVersion":"2.4.7","packageVersion":"0.8.4-alpha2","packageName":"@teachablemachine/image","timeStamp":"2023-09-16T21:26:52.769Z","userMetadata":{},"modelName":"tm-my-image-model","labels":["Anime","Not Anime"],"imageSize":224}
+{"tfjsVersion":"1.3.1","tmVersion":"2.4.7","packageVersion":"0.8.4-alpha2","packageName":"@teachablemachine/image","timeStamp":"2023-10-15T18:05:40.591Z","userMetadata":{},"modelName":"tm-my-image-model","labels":["Anime","Furry","Neutral"],"imageSize":224}

@@ -50,7 +50,7 @@ client.once('ready', async function () {
         client.events.set(event.name, event)
     }
 
-    console.log('Anti Anime Bot is ready to punish weebs!')
+    console.log('Anti Anime Bot is ready to punish degens!')
 
     await client.user.setActivity('weebs suffer', { type: ActivityType.Watching })
 })
@@ -117,24 +117,13 @@ async function predictImage(imageUrl) {
     // Predict image
     const prediction = await model.predict(imageNormalized)
     const predictedClass = tf.argMax(prediction, 1).dataSync()[0]
-    const predictedClassName = ['Anime', 'Not Anime'][predictedClass]
+    const predictedClassName = ['Anime', 'Furry', 'Neutral'][predictedClass]
     const predictedClassConfidence = await prediction.dataSync()[predictedClass].toFixed(2)
 
     const endTime = Date.now()
 
     return JSON.stringify({ class: predictedClassName, confidence: Number(predictedClassConfidence), time: `${endTime - startTime}ms` })
 }
-
-async function checkUpdate() {
-    const githubPackage = await axios.get('https://raw.githubusercontent.com/Lozarth/antianimebot/main/bot/package.json', { responseType: 'json' }).then(response => response.data)
-    const localPackage = require('./package.json')
-
-    if (githubPackage.version !== localPackage.version) {
-        console.log('Hey btw I released a new version you should download it')
-    }
-}
-
-checkUpdate()
 
 process.on('unhandledRejection', function (error) {
     console.error(error)

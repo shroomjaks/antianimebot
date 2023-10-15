@@ -16,8 +16,7 @@ module.exports = {
             const punishments = gameSettings.punishments
             const punishment = Object.keys(punishments).find(punishment => punishments[punishment].enabled === true)
             const punishmentSettings = punishments[punishment]
-            let punishmentMessage = punishmentSettings.message
-            punishmentMessage = punishmentMessage.replace('{game_name}', activity.name)
+            let punishmentMessage = punishmentSettings.message.replace('{game_name}', activity.name)
 
             if (bannedGames.includes(activity.name)) {
                 if (punishment === 'kick' && member.kickable) {
